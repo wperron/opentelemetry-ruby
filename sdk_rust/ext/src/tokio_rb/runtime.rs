@@ -1,10 +1,10 @@
 mod builder;
 mod enter_guard;
-mod handle;
+pub(crate) mod handle;
 
 use magnus::block::{block_given, yield_value};
 
-use self::builder::Builder;
+use self::{builder::Builder, handle::Handle};
 use crate::tokio_rb::prelude::*;
 
 /// @yard
@@ -69,6 +69,13 @@ impl Runtime {
         }?;
 
         Ok(ret)
+    }
+
+    // TODO(wperron): use crate::handle::Handle
+    pub fn handle(&self) -> Handle {
+        Handle {
+            inner: self.inner.handle().to_owned(),
+        }
     }
 }
 

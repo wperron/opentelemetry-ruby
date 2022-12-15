@@ -5,6 +5,7 @@ mod runtime;
 
 pub use helpers::{Wrapped, WrappedStruct};
 use magnus::{define_module, gc};
+pub use runtime::handle::Handle;
 pub use runtime::Runtime;
 
 use crate::tokio_rb::prelude::*;

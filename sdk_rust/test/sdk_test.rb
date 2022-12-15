@@ -26,22 +26,26 @@ class SDKTest < Test::Unit::TestCase
       ENV['OTEL_TRACES_EXPORTER'] = 'otlp'
 
       rt = Tokio::Runtime.new
+      trace_runtime = OpenTelemetry::SDK::Trace::Runtime.new(rt)
 
-      rt.enter do
-        OpenTelemetry::SDK.configure
-      end
+      # rt.enter do
+      OpenTelemetry::SDK.configure(trace_runtime)
+      # end
 
       tp = OpenTelemetry::SDK::Trace::TracerProvider.new
-      tp.tracer("foo", "1.2.3").start_span("bar", attributes: {"answer" => 42, "true" => true, "false" => false, "float" => 1.0, "stringy" => "mcstringface"}).finish
+      tracer = tp.tracer("foo", "1.2.3")
+      tracer.start_span("bar", attributes: {"answer" => 42, "true" => true, "false" => false, "float" => 1.0, "stringy" => "mcstringface"}).finish
 
       tp.shutdown # on the Rust side, drops the inner TracerProvider held in global
 
-      rt = nil # drop reference to tokio runtime
-      GC.start
-      tp = nil # drop reference to tracer provider
-      GC.start
+      # rt = nil # drop reference to tokio runtime
+      # GC.start
+      # tracer = nil
+      # tp = nil # drop reference to tracer provider
+      # GC.start
       ENV.delete('OTEL_EXPORTER_OTLP_ENDPOINT')
       ENV.delete('OTEL_TRACES_EXPORTER')
+      puts "[rb] test done"
     end
   end
 end

@@ -1,3 +1,4 @@
+use futures_util::Future;
 use magnus::{Error, Symbol};
 use tokio::runtime::RuntimeFlavor;
 
@@ -9,9 +10,15 @@ use crate::tokio_rb::runtime;
 /// Represents a Tokio runtime handle.
 /// @see https://docs.rs/tokio/latest/tokio/runtime/struct.Handle.html Rust doc
 #[magnus::wrap(class = "Tokio::Runtime::Handle")]
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Handle {
-    inner: tokio::runtime::Handle,
+    pub(crate) inner: tokio::runtime::Handle,
+}
+
+impl Drop for Handle {
+    fn drop(&mut self) {
+        println!("HANDLE DROPPED");
+    }
 }
 
 impl Handle {
@@ -40,6 +47,14 @@ impl Handle {
         };
 
         Ok(Symbol::from(flavor))
+    }
+
+    pub fn spawn<T>(&self, future: T) -> tokio::task::JoinHandle<T::Output>
+    where
+        T: Future + Send + 'static,
+        T::Output: Send + 'static,
+    {
+        self.inner.spawn(future)
     }
 }
 
